@@ -6,9 +6,9 @@ from PIL import Image, ImageTk
 import deck
 import player
 
-class Poker(tk.Tk):
+class SimpleBlackJack(tk.Tk):
     def __init__(self):
-        super(Poker, self).__init__()
+        super(SimpleBlackJack, self).__init__()
         self.title("Kusoge")  # Set Title
         self.geometry("{}x{}".format(1000,1000))  # Set the resolution of window
         self.set_valuables() # initialize valuables
@@ -17,9 +17,8 @@ class Poker(tk.Tk):
         self.set_board()
         self.set_button()  # place button
         self.deck = self.initDeck()
-        self.player = player.Player()
-        self.enemy = player.Enemy()
-        self.turn_count = 0
+        self.player = player.Player(self)
+        self.enemy = player.Enemy(self)
         self.card_img = []
 
     def initDeck(self): # get playing card deck
@@ -35,11 +34,11 @@ class Poker(tk.Tk):
         self.board.place(x=0, y=0)
     
     def set_button(self):
-        # turn button
+        # game start button
         self.btn_turn = tk.Button(
             self,
-            text='Next turn',
-            command=self.turn,
+            text='Start',
+            command=self.game_start,
         )
         self.btn_turn.place(x=0, y=750)
         # reset button
@@ -64,36 +63,26 @@ class Poker(tk.Tk):
         )
         self.btn_remove.place(x=300, y=750)
         
-    def place_card(self, card, pos_x, pos_y, tag):
+    def place_card(self, card, pos_x, pos_y):
         # get card image
         # push img data to valuable in this class otherwise img will be discarded by gabage colletion fuction
         self.card_img.append(card.getImg())
 
         # create a label
         self.board.create_image(
-            pos_x + self.turn_count * 40,
+            pos_x,
             pos_y,
             image=self.card_img[-1],
-            tags = tag
         )
-        print(self.board.find_all())
+        # print(self.board.find_all())
 
 
-    def render_card(self):
-        # render player hand
+    def render_card(self, p):
+        # render card img
         self.place_card(
-            card=self.player.get_last_card(),
-            pos_x=500,
-            pos_y=700,
-            tag = 'P' + str(self.turn_count)
-        )
-
-        # render enemy hand
-        self.place_card(
-            card=self.enemy.get_last_card(),
-            pos_x=500,
-            pos_y=200,
-            tag='E' + str(self.turn_count)
+            card=p.get_last_card(),
+            pos_x=p.card_pos_x + len(p.hand) * 40,
+            pos_y=p.card_pos_y,
         )
 
     def render_numbers(self):
@@ -110,7 +99,7 @@ class Poker(tk.Tk):
             foreground='#0000ff',
             background='#00ffff',
             font=fontStyle,
-            ).place(anchor=tk.CENTER, relx=0.5, rely=0.7, y=-25)
+            ).place(anchor=tk.CENTER, relx=0.5, rely=0.5, y=0)
         
         # render enemy point
         e_point = tk.Label(
@@ -118,7 +107,7 @@ class Poker(tk.Tk):
             foreground='#ff0000',
             background='#ffaacc',
             font=fontStyle,
-            ).place(anchor=tk.CENTER, relx=0.5, rely=0.4, y=20)
+            ).place(anchor=tk.CENTER, relx=0.5, rely=0.4, y=0)
         
         # render turn
         turn = tk.Label(
@@ -151,9 +140,20 @@ class Poker(tk.Tk):
         # disable turn button
         self.btn_turn["state"] = tk.DISABLED
 
+    def game_start(self):
+        # draw 2 cards to player
+        for i in range(2):
+            self.player.push(self.deck.draw())
+            self.render_card(self.player)
+        
+        # draw 2 cards to enemy
+        for i in range(2):
+            self.enemy.push(self.deck.draw())
+            self.render_card(self.enemy)
+        
+        self.print_points()
+
     def turn(self):
-        # increment turn
-        self.turn_count += 1
         
         # push card to player
         self.player.push(self.deck.draw())
@@ -165,12 +165,17 @@ class Poker(tk.Tk):
         self.render_card()
 
         # render numbers
-        self.render_numbers()
+        # self.render_numbers()
 
         # determine winner
-        if (self.turn_count >= 5):
-            self.game_end()
+        #if (self.turn_count >= 5):
+        #    self.game_end()
     
+    def print_points(self):  # print points in console
+        # print points in console
+        print('Player:{}'.format(self.player.point))
+        print('Enemy:{}'.format(self.enemy.point))
+
     def clear(self):  # initialize
         self.board.delete('all')
         self.set_valuables()
@@ -185,5 +190,5 @@ class Poker(tk.Tk):
         self.mainloop()
 
 if __name__ == '__main__':
-    g = Poker()
+    g = SimpleBlackJack()
     g.run()
