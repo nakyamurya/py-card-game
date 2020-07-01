@@ -30,9 +30,9 @@ class Enemy(PlayerBase):
 
     # override
     def push(self, card):
-        if len(self.hand) == 0:
-            card.back = False
-        else:
+        if len(self.hand) == 1:
             card.back = True
+        else:
+            card.back = False
         self.hand.append(card)
         self.point += card.rank

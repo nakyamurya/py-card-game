@@ -49,14 +49,25 @@ class Card:
         return ImageTk.PhotoImage(img)
 
 class Deck:
-    def __init__(self):
+    def __init__(self, drop_joker=False, black_jack=False):
         self.carddeck = []
+        self.drop_joker = drop_joker
+        self.black_jack = black_jack
+
     
     def init(self):
         card_lst = glob.glob('./PNG-cards-1.3/cards/*.png')
 
         for c in card_lst:
             card = self.decord(c)
+            if self.drop_joker: # drop joker option
+                if card.suit == 'joker':
+                    continue
+            
+            if self.black_jack: # black jack option
+                if card.rank > 10:
+                    card.rank = 10 # J, Q, K should be counted as 10
+
             self.carddeck.append(card)
     
     def decord(self, path):
